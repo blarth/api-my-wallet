@@ -155,7 +155,7 @@ server.post("/entries" , async(req, res) => {
     }
 
     try {
-        await db.collection("wallet").insertOne({...entryData, userId : valToken.userId})
+        await db.collection("wallet").insertOne({...entryData, userId : valToken.userId, date : dayjs().format("DD/MM")})
         res.sendStatus(201)
 
         
