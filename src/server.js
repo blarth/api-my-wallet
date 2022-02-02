@@ -30,18 +30,22 @@ const schemaSignUp = joi.object({
     password: joi.string().required(),
   });
 const schemaLogin = joi.object({
-    name: joi.string().min(1).required(),
+    email: joi.string().required(),
+    password : joi.string().required()
+  });
+const schemaEntries = joi.object({
+    value: joi.number().required(),
+    description : joi.string().required(),
+    type : joi.any().allow("in" , "out")
   });
 
 server.post("/sign-up", async (req, res) => {
   
   const user = req.body;
-
   const validation = schemaSignUp.validate(user)
 
   if (validation.error) {
-    res.status(422).send("Name deve ser strings não vazio");
-    console.log(validation.error.details);
+    res.status(422).send(validation.error.details)
     return;
   }
 
@@ -51,10 +55,15 @@ server.post("/sign-up", async (req, res) => {
       password : sanitizeData(user.password)
   }
 
-  const passwordHash = bcrypt.hashSync(userData.password, parseInt(process.env.DIF));
+  
   try {
-      await db.collection("users").insertOne({ ...userData, password: passwordHash });
-      res.sendStatus(201);
+        const alreadyInDB = await db.collection("users").findOne({userData})
+        if(alreadyInDB){
+            return res.sendStatus(409)
+        }
+        const passwordHash = bcrypt.hashSync(userData.password, parseInt(process.env.DIF));
+        await db.collection("users").insertOne({ ...userData, password: passwordHash });
+        res.sendStatus(201);
   } catch (error) {
       console.log(error)
       res.sendStatus(500)
@@ -63,26 +72,110 @@ server.post("/sign-up", async (req, res) => {
   
 });
 
+
 server.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await db.collection("users").findOne({ email });
-
-  if (user && bcrypt.compareSync(password, user.password)) {
-    const token = tokenGenerator();
-
-    await db.collection("sessions").insertOne({
-      userId: user._id,
-      token,
-    });
-
-    res.send(token);
-  } else {
-    // usuário não encontrado (email ou senha incorretos)
-  }
+    const userSingIn = req.body;
+    
+    const validation = schemaLogin.validate(userSingIn)
+    
+    if (validation.error) {
+        res.status(422).send(validation.error.details);
+        return;
+    }
+    
+    const userData = {
+        email : sanitizeData(userSingIn.email),
+        password : sanitizeData(userSingIn.password)
+    }
+    
+    try {
+        const userVal = await db.collection("users").findOne({ email : userData.email });
+        
+        
+        if (userVal && bcrypt.compareSync(userData.password, userVal.password)) {
+            const token = tokenGenerator();
+            console.log()
+            
+            await db.collection("sessions").insertOne({
+                userId: userVal._id,
+                token,
+            });
+            res.send(token);
+        } else {
+            res.status(401).send("email or password incorrect")
+        }
+        
+    } catch (error) {
+     console.log(error)   
+     res.sendStatus(500)
+    }
 });
 
+server.get("/wallet" , async (req, res) => {
+    const { authorization } = req.headers;
+    const token = authorization?.replace('Bearer ', '');
+    
+    const valToken = await db.collection("sessions").findOne({token})
+    
+    if(!valToken){
+        res.sendStatus(401)
+        return
+    }
+    try {
+        res.status(200).send(await db.collection("wallet").find({userId : valToken.userId}).toArray())
+    } catch (error) {
+        console.log(error)
+        res.sendStatus(500)
+    }
+})
+
+server.post("/entries" , async(req, res) => {
+    const { authorization } = req.headers;
+    const entry = req.body
+
+    const token = authorization?.replace('Bearer ', '');
+    
+    const valToken = await db.collection("sessions").findOne({token})
+    
+    if(!valToken){
+        res.sendStatus(401)
+        return
+    }
+    
+
+    const validation = schemaEntries.validate(entry)
+    if (validation.error) {
+        res.status(422).send(validation.error.details);
+        return;
+    }
+
+    const entryData = {
+        ...entry , 
+        description : sanitizeData(entry.description)
+    }
+
+    try {
+        await db.collection("wallet").insertOne({...entryData, userId : valToken.userId})
+        res.sendStatus(201)
+
+        
+    } catch (error) {
+        console.log(error)
+        res.sendStatus(500)
+    }
+
+    
+    
+
+})
+
+server.get("/db" , async(req, res) =>{
+    res.send(await db.collection("users").find({}).toArray())
+} )
+server.get("/session" , async(req, res) =>{
+    res.send(await db.collection("sessions").find({}).toArray())
+} )
 server.listen(5000, () => {
-  console.log("Server is listening on port 5000.");
+    console.log("Server is listening on port 5000.");
 });
 
