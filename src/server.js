@@ -34,9 +34,9 @@ const schemaLogin = joi.object({
     password : joi.string().required()
   });
 const schemaEntries = joi.object({
-    value: joi.number().required(),
+    value: joi.string().required(),
     description : joi.string().required(),
-    type : joi.any().allow("in" , "out")
+    type: joi.string().valid("in", "out").required(),
   });
 
 server.post("/sign-up", async (req, res) => {
@@ -100,7 +100,7 @@ server.post("/login", async (req, res) => {
                 userId: userVal._id,
                 token,
             });
-            res.send(token);
+            res.send({token , name : userVal.name});
         } else {
             res.status(401).send("email or password incorrect")
         }
@@ -122,6 +122,7 @@ server.get("/wallet" , async (req, res) => {
         return
     }
     try {
+        
         res.status(200).send(await db.collection("wallet").find({userId : valToken.userId}).toArray())
     } catch (error) {
         console.log(error)
@@ -143,7 +144,7 @@ server.post("/entries" , async(req, res) => {
     }
     
 
-    const validation = schemaEntries.validate(entry)
+    const validation = schemaEntries.validate(entry , {abortEarly : true})
     if (validation.error) {
         res.status(422).send(validation.error.details);
         return;
@@ -156,6 +157,7 @@ server.post("/entries" , async(req, res) => {
 
     try {
         await db.collection("wallet").insertOne({...entryData, userId : valToken.userId, date : dayjs().format("DD/MM")})
+        
         res.sendStatus(201)
 
         
@@ -175,6 +177,12 @@ server.get("/db" , async(req, res) =>{
 server.get("/session" , async(req, res) =>{
     res.send(await db.collection("sessions").find({}).toArray())
 } )
+
+server.delete("/entries" , async (req, res) => {
+    await db.collection("wallet").deleteMany({})
+    res.sendStatus(200)
+})
+
 server.listen(5000, () => {
     console.log("Server is listening on port 5000.");
 });
