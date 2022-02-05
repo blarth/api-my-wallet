@@ -3,7 +3,7 @@ import schemaLogin from "../Schema/SchemaLogin.js";
 import schemaSignUp from "../Schema/SchemaSignup.js"
 
 
- function validateSchemaSignUp(req, res, next){
+export function validateSchemaSignUp(req, res, next){
     const validation = schemaSignUp.validate(req.body)
   
     if (validation.error) {
@@ -21,7 +21,7 @@ import schemaSignUp from "../Schema/SchemaSignup.js"
 }
 
 
-function validateSchemaLogin(req, res, next){
+export function validateSchemaLogin(req, res, next){
 
     const validation = schemaLogin.validate(req.body)
         
@@ -31,13 +31,9 @@ function validateSchemaLogin(req, res, next){
         }
         
         res.locals.user = {
-            email : sanitizeData(userSingIn.email),
-            password : sanitizeData(userSingIn.password)
+            email : sanitizeData(req.body.email),
+            password : sanitizeData(req.body.password)
         }
         next()
 }
 
-export default {
-    validateSchemaLogin,
-    validateSchemaSignUp
-}

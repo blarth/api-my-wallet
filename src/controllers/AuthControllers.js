@@ -25,7 +25,7 @@ export async function signUp(req, res) {
 export async function login (req, res)  {
     
     
-    userData = res.locals.user
+    const userData = res.locals.user
     try {
         const userVal = await db.collection("users").findOne({ email : userData.email });
         

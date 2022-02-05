@@ -1,4 +1,5 @@
 import schemaEntries from "../Schema/SchemaEntries.js"
+import sanitizeData from "../Schema/Sanitizer.js";
 
 export default function validateBodyEntries(req, res, next){
     const validation = schemaEntries.validate(req.body , {abortEarly : true})
@@ -9,8 +10,9 @@ export default function validateBodyEntries(req, res, next){
 
     res.locals.data = {
         ...req.body , 
-        description : sanitizeData(entry.description)
+        description : sanitizeData(req.body.description)
     }
+   
     next();
 
     

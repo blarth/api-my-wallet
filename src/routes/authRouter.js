@@ -1,5 +1,4 @@
-import validateSchemaSignUp from '../middlewares/ValidateAuth.js';
-import validateSchemaLogin from "../middlewares/ValidateAuth.js"
+import {validateSchemaSignUp, validateSchemaLogin} from '../middlewares/ValidateAuth.js';
 import { signUp, login } from '../controllers/AuthControllers.js';
 import express from 'express';
 

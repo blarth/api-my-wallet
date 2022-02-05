@@ -1,3 +1,5 @@
+import db from "../../db.js"
+
 export async function getUsersfromDB(req, res){
     res.send(await db.collection("users").find({}).toArray())
 }
