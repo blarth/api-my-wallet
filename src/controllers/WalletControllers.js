@@ -51,7 +51,7 @@ export async function changeEntryById(req, res){
         const entryData = res.locals.data
         
         await db.collection("wallet").updateOne({_id : new ObjectId(req.params.idEntry)} , { $set : {...entryData , userId : valUser._id, date : dayjs().format("DD/MM")}})
-        res.sendStatus(201)
+        res.sendStatus(200)
     } catch (error) {
         console.log(error)
         res.sendStatus(500)
@@ -62,7 +62,7 @@ export async function changeEntryById(req, res){
 export async function deleteEntryById(req, res){
     try {
         await db.collection("wallet").deleteOne({_id : new ObjectId(req.params.idEntry)})
-        res.sendStatus(201)
+        res.sendStatus(200)
     } catch (error) {
         console.log(error)
         res.sendStatus(500)
