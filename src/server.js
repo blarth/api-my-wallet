@@ -2,8 +2,6 @@ import cors from "cors";
 import express, { json } from "express";
 import router from "./routes/index.js"
 
-
-
 const server = express();
 
 
