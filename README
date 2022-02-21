@@ -4,7 +4,7 @@
 
 This is the myWallet app api. Built with NodeJS + Express + MongoDB. It manages users and their data.
 
-The Front-end GitHub may be acessed [here](https://github.com/blarth/api-my-wallet)
+The Front-end GitHub may be acessed : https://github.com/blarth/my-wallet-react
 
 ## Why?
 
@@ -21,7 +21,7 @@ Full-Stack projects need to be done so I can start to understand better all part
 
 ## Routes used by the client
 
-Base URL: https://fesak-my-wallet-backend.herokuapp.com//)
+Base URL: https://apimy-wallet.herokuapp.com)
 
 - Login: POST on '/login'
 - Sign-up: POST on '/sign-up'
