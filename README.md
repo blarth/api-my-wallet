@@ -1,5 +1,5 @@
 
-My Wallet API
+# My Wallet API
 
 ## About this project
 
